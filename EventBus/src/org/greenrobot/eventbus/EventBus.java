@@ -110,14 +110,21 @@ public class EventBus {
 
     EventBus(EventBusBuilder builder) {
         logger = builder.getLogger();
+//        key：订阅的事件，value：订阅这个事件的所有订阅者集合
         subscriptionsByEventType = new HashMap<>();
+//        key：订阅者对象，value：这个订阅者订阅的事件集合
         typesBySubscriber = new HashMap<>();
+//        key：粘性事件的class对象 value：事件对象
         stickyEvents = new ConcurrentHashMap<>();
         mainThreadSupport = builder.getMainThreadSupport();
+        //        事件主线程处理
         mainThreadPoster = mainThreadSupport != null ? mainThreadSupport.createPoster(this) : null;
-        backgroundPoster = new BackgroundPoster(this);
+//        事件background处理
+        backgroundPoster =  new BackgroundPoster(this);
+//        事件异步线程处理
         asyncPoster = new AsyncPoster(this);
         indexCount = builder.subscriberInfoIndexes != null ? builder.subscriberInfoIndexes.size() : 0;
+//        订阅者响应函数信息存储和查找类
         subscriberMethodFinder = new SubscriberMethodFinder(builder.subscriberInfoIndexes,
                 builder.strictMethodVerification, builder.ignoreGeneratedIndex);
         logSubscriberExceptions = builder.logSubscriberExceptions;
@@ -125,6 +132,7 @@ public class EventBus {
         sendSubscriberExceptionEvent = builder.sendSubscriberExceptionEvent;
         sendNoSubscriberEvent = builder.sendNoSubscriberEvent;
         throwSubscriberException = builder.throwSubscriberException;
+//        是否支持事件继承
         eventInheritance = builder.eventInheritance;
         executorService = builder.executorService;
     }
@@ -138,7 +146,10 @@ public class EventBus {
      * ThreadMode} and priority.
      */
     public void register(Object subscriber) {
+//        首先获得继承者的class对象
         Class<?> subscriberClass = subscriber.getClass();
+//        通过findSubscriberMethods 来找到订阅者订阅了哪些事件，返回SubscriberMethod的列表
+//        subscriberMethods 中包含这个方法的method对象，以及响应在哪个线程的ThreadMode，订阅的事件类型eventType，订阅的优先级priority，是否接受粘性sticky事件的Boolean值
         List<SubscriberMethod> subscriberMethods = subscriberMethodFinder.findSubscriberMethods(subscriberClass);
         synchronized (this) {
             for (SubscriberMethod subscriberMethod : subscriberMethods) {
