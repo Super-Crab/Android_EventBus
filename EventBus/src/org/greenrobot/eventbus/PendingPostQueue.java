@@ -17,7 +17,9 @@
 package org.greenrobot.eventbus;
 
 final class PendingPostQueue {
+//    待发送对象队列头结点
     private PendingPost head;
+//    待发送对象队列尾节点
     private PendingPost tail;
 
     synchronized void enqueue(PendingPost pendingPost) {

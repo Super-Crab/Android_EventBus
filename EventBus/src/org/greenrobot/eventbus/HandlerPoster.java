@@ -35,9 +35,11 @@ public class HandlerPoster extends Handler implements Poster {
     }
 
     public void enqueue(Subscription subscription, Object event) {
+//        将待发送对象加入队列
         PendingPost pendingPost = PendingPost.obtainPendingPost(subscription, event);
         synchronized (this) {
             queue.enqueue(pendingPost);
+//            当HandleMessage没有运行，发一条空消息让handleMessage响应
             if (!handlerActive) {
                 handlerActive = true;
                 if (!sendMessage(obtainMessage())) {
@@ -64,7 +66,9 @@ public class HandlerPoster extends Handler implements Poster {
                         }
                     }
                 }
+                //如果订阅者没有取消注册,则分发消息
                 eventBus.invokeSubscriber(pendingPost);
+                //如果在一定时间内仍然没有发完队列中所有的待发送者,则退出
                 long timeInMethod = SystemClock.uptimeMillis() - started;
                 if (timeInMethod >= maxMillisInsideHandleMessage) {
                     if (!sendMessage(obtainMessage())) {
